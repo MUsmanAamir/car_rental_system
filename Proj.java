@@ -46,6 +46,48 @@ class Car {
     }
 }
 
+class Customer {
+    private String customerId;
+    private String name;
+
+    public Customer(String customerId, String name) {
+        this.customerId = customerId;
+        this.name = name;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+
+class Rental {
+    private Car car;
+    private Customer customer;
+    private int days;
+
+    public Rental(Car car, Customer customer, int days) {
+        this.car = car;
+        this.customer = customer;
+        this.days = days;
+    }
+
+    public Car getCar(){
+        return car;
+    }
+
+    public Customer getCustomer(){
+        return customer;
+    }
+
+    public int getDays(){
+        return days;
+    }
+}
+
 class Proj {
     public static void main(String[] args) {
         System.out.println("Usman");
