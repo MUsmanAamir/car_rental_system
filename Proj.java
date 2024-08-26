@@ -2,6 +2,56 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+public class Proj {
+    public static void main(String [] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        Customer customer = new Customer("CS1", "Usman Aamir");
+        while (true) {
+            System.out.println("\n| Car Rental System |");
+            System.out.println("1. View available cars");
+            System.out.println("2. Rent a car");
+            System.out.println("3. Extend a rental");
+            System.out.println("4. View rental history");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            RentalSystem rentalSystem = new RentalSystem();
+            switch (choice) {
+                case 1:
+                    rentalSystem.viewAvailableCars();
+                    break;
+
+                case 2:
+                    System.out.println("Enter the Car Id to rent: ");
+                    String carId = scanner.nextLine();
+                    System.out.println("Enter the number of days to rent: ");
+                    int days = scanner.nextInt();
+                    rentalSystem.rentCar(carId, customer, days);
+                    break;
+                case 3:
+                    System.out.print("Enter Car ID to extend rental: ");
+                    carId = scanner.nextLine();
+                    System.out.print("Enter additional number of days: ");
+                    int additionalDays = scanner.nextInt();
+                    rentalSystem.extendRental(carId, additionalDays);
+                    break;
+                case 4:
+                    rentalSystem.viewRentalHistory(customer);
+                    break;
+                case 5:
+                    System.out.println("Exiting...");
+                    scanner.close();
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+}
+
 class Car {
     private String carId;
     private String brand;
@@ -75,15 +125,15 @@ class Rental {
         this.days = days;
     }
 
-    public Car getCar(){
+    public Car getCar() {
         return car;
     }
 
-    public Customer getCustomer(){
+    public Customer getCustomer() {
         return customer;
     }
 
-    public int getDays(){
+    public int getDays() {
         return days;
     }
 }
@@ -96,14 +146,15 @@ class RentalSystem {
         cars.add(new Car("C1", "Toyota", "Camry", 50.0));
         cars.add(new Car("C2", "Honda", "Civic", 45.0));
         cars.add(new Car("C3", "Ford", "Mustang", 70.0));
-        cars.add(new Car("C4","Audi","E-tron", 65.0));
+        cars.add(new Car("C4", "Audi", "E-tron", 65.0));
     }
 
     public void viewAvailableCars() {
         System.out.println("Available Cars:");
         for (Car car : cars) {
             if (car.isAvailable()) {
-                System.out.println("ID: " + car.getCarId() + ", Brand: " + car.getBrand() + ", Model: " + car.getModel() + ", Price/Day: $" + car.calculatePrice(1));
+                System.out.println("ID: " + car.getCarId() + ", Brand: " + car.getBrand() + ", Model: " + car.getModel()
+                        + ", Price/Day: $" + car.calculatePrice(1));
             }
         }
     }
@@ -114,7 +165,8 @@ class RentalSystem {
                 car.rentStart();
                 Rental rental = new Rental(car, customer, days);
                 rentals.add(rental);
-                System.out.println(customer.getName() + " has rented the " + car.getBrand() + " " + car.getModel() + " for " + days + " days.");
+                System.out.println(customer.getName() + " has rented the " + car.getBrand() + " " + car.getModel()
+                        + " for " + days + " days.");
                 return;
             }
         }
@@ -125,7 +177,8 @@ class RentalSystem {
         for (Rental rental : rentals) {
             if (rental.getCar().getCarId().equals(carId)) {
                 int newDays = rental.getDays() + additionalDays;
-                System.out.println("Rental for car " + rental.getCar().getBrand() + " " + rental.getCar().getModel() + " extended by " + additionalDays + " days. Total rental days: " + newDays);
+                System.out.println("Rental for car " + rental.getCar().getBrand() + " " + rental.getCar().getModel()
+                        + " extended by " + additionalDays + " days. Total rental days: " + newDays);
                 return;
             }
         }
@@ -136,7 +189,8 @@ class RentalSystem {
         System.out.println("Rental History for " + customer.getName() + ":");
         for (Rental rental : rentals) {
             if (rental.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
-                System.out.println("Car: " + rental.getCar().getBrand() + " " + rental.getCar().getModel() + ", Days Rented: " + rental.getDays());
+                System.out.println("Car: " + rental.getCar().getBrand() + " " + rental.getCar().getModel()
+                        + ", Days Rented: " + rental.getDays());
             }
         }
     }
@@ -146,14 +200,12 @@ class RentalSystem {
         System.out.println("Processing payment for " + rental.getCustomer().getName() + ":");
         System.out.println("Car: " + rental.getCar().getBrand() + " " + rental.getCar().getModel());
         System.out.println("Total Amount: $" + totalAmount);
-       
+
     }
-    
+
     public List<Rental> getRentals() {
         return rentals;
     }
 }
 
-public class Proj {
-    
-}
+
