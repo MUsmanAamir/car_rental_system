@@ -52,6 +52,47 @@ public class Proj {
     }
 }
 
+class User {
+    private String userId;
+    private String name;
+    private String role;
+    private String password;
+
+    public User(String userId, String name, String role, String password){
+        this.userId = userId;
+        this.name = name;
+        this.role = role;
+        this.password = password;
+    }
+
+    public String getUserId(){
+        return userId;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getRole(){
+        return role;
+    }
+
+    public String getPassword(){
+        return password;
+    }
+}
+
+class Customer extends User {
+    public Customer(String userId, String name, String password){
+        super(userId, name, "Customer", password);
+    }
+}
+
+class Admin extends User {
+    public Admin(String userId, String name, String password){
+        super(userId, name, "Admin", password);
+    }
+}
 class Car {
     private String carId;
     private String brand;
