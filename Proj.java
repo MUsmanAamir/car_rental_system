@@ -1,7 +1,13 @@
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.*; // Import for file handling and IO operations
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.StringTokenizer;
 
 public class Proj {
@@ -298,11 +304,11 @@ class Rental {
 class RentalSystem {
     private List<Car> cars = new ArrayList<>();
     private List<Rental> rentals = new ArrayList<>();
-    private List<User> users = new ArrayList<>(); // List to store registered users
-    private static final String CAR_DATA_FILE = "cars.txt"; // File to store car info
+    private List<User> users = new ArrayList<>();
+    private static final String CAR_DATA_FILE = "cars.txt";
 
     public RentalSystem() {
-        loadCarsFromFile(); // Load cars when the system starts
+        loadCarsFromFile();
     }
 
     public void saveCarsToFile() {
@@ -332,7 +338,7 @@ class RentalSystem {
 
     public void addCar(Car car) {
         cars.add(car);
-        saveCarsToFile(); // Save car data to file after adding a new car
+        saveCarsToFile();
     }
 
     public void registerUser(User user) {
@@ -360,7 +366,7 @@ class RentalSystem {
                 car.rentStart();
                 Rental rental = new Rental(car, customer, days);
                 rentals.add(rental);
-                saveCarsToFile(); // Save car availability change
+                saveCarsToFile();
                 System.out.println("Car rented successfully. Total price: $" + car.calculatePrice(days));
                 return;
             }
