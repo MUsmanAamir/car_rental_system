@@ -1,14 +1,16 @@
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.*; // Import for file handling and IO operations
+import java.util.StringTokenizer;
 
 public class Proj {
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         RentalSystem rentalSystem = new RentalSystem();
-        
+
         rentalSystem.registerUser(new Admin("A1", "Admin", "admin123"));
-        
+
         while (true) {
             System.out.println("\n| Car Rental System |");
             System.out.println("1. Register");
@@ -81,9 +83,9 @@ public class Proj {
                 case 1:
                     System.out.println("Viewing all rentals:");
                     for (Rental rental : rentalSystem.getRentals()) {
-                        System.out.println("Car: " + rental.getCar().getBrand() + " " + rental.getCar().getModel() + 
-                                           ", Rented by: " + rental.getCustomer().getName() + 
-                                           ", Days: " + rental.getDays());
+                        System.out.println("Car: " + rental.getCar().getBrand() + " " + rental.getCar().getModel() +
+                                ", Rented by: " + rental.getCustomer().getName() +
+                                ", Days: " + rental.getDays());
                     }
                     break;
 
@@ -166,42 +168,42 @@ class User {
     private String role;
     private String password;
 
-    public User(String userId, String name, String role, String password){
+    public User(String userId, String name, String role, String password) {
         this.userId = userId;
         this.name = name;
         this.role = role;
         this.password = password;
     }
 
-    public String getUserId(){
+    public String getUserId() {
         return userId;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public String getRole(){
+    public String getRole() {
         return role;
     }
 
-    public String getPassword(){
+    public String getPassword() {
         return password;
     }
 }
 
 class Customer extends User {
-    public Customer(String userId, String name, String password){
+    public Customer(String userId, String name, String password) {
         super(userId, name, "Customer", password);
     }
 
-    public String getCustomerId(){
+    public String getCustomerId() {
         return userId;
     }
 }
 
 class Admin extends User {
-    public Admin(String userId, String name, String password){
+    public Admin(String userId, String name, String password) {
         super(userId, name, "Admin", password);
     }
 }
@@ -248,12 +250,31 @@ class Car {
     public void returnCar() {
         isAvailable = true;
     }
+
+    public String toFileString() {
+        return carId + "," + brand + "," + model + "," + basePricePerDay + "," + isAvailable;
+    }
+
+    public static Car fromFileString(String carData) {
+        StringTokenizer tokenizer = new StringTokenizer(carData, ",");
+        String carId = tokenizer.nextToken();
+        String brand = tokenizer.nextToken();
+        String model = tokenizer.nextToken();
+        double pricePerDay = Double.parseDouble(tokenizer.nextToken());
+        boolean availability = Boolean.parseBoolean(tokenizer.nextToken());
+
+        Car car = new Car(carId, brand, model, pricePerDay);
+        if (!availability) {
+            car.rentStart();
+        }
+        return car;
+    }
 }
 
 class Rental {
     private Car car;
     private Customer customer;
-    private int days;
+    int days;
 
     public Rental(Car car, Customer customer, int days) {
         this.car = car;
@@ -278,23 +299,50 @@ class RentalSystem {
     private List<Car> cars = new ArrayList<>();
     private List<Rental> rentals = new ArrayList<>();
     private List<User> users = new ArrayList<>(); // List to store registered users
+    private static final String CAR_DATA_FILE = "cars.txt"; // File to store car info
 
     public RentalSystem() {
-        cars.add(new Car("C1", "Toyota", "Camry", 50.0));
-        cars.add(new Car("C2", "Honda", "Civic", 45.0));
-        cars.add(new Car("C3", "Ford", "Mustang", 70.0));
-        cars.add(new Car("C4", "Audi", "E-tron", 65.0));
+        loadCarsFromFile(); // Load cars when the system starts
+    }
+
+    public void saveCarsToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(CAR_DATA_FILE))) {
+            for (Car car : cars) {
+                writer.write(car.toFileString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving cars to file: " + e.getMessage());
+        }
+    }
+
+    public void loadCarsFromFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(CAR_DATA_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Car car = Car.fromFileString(line);
+                cars.add(car);
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("No car data found, starting with empty list.");
+        } catch (IOException e) {
+            System.out.println("Error reading car data file: " + e.getMessage());
+        }
+    }
+
+    public void addCar(Car car) {
+        cars.add(car);
+        saveCarsToFile(); // Save car data to file after adding a new car
     }
 
     public void registerUser(User user) {
         users.add(user);
-        System.out.println(user.getRole() + " " + user.getName() + " registered successfully.");
     }
 
     public User login(String userId, String password) {
         for (User user : users) {
             if (user.getUserId().equals(userId) && user.getPassword().equals(password)) {
-                System.out.println(user.getRole() + " " + user.getName() + " logged in successfully.");
+                System.out.println("Login successful. Welcome, " + user.getName() + "!");
                 return user;
             }
         }
@@ -302,14 +350,8 @@ class RentalSystem {
         return null;
     }
 
-    public void viewAvailableCars() {
-        System.out.println("Available Cars:");
-        for (Car car : cars) {
-            if (car.isAvailable()) {
-                System.out.println("ID: " + car.getCarId() + ", Brand: " + car.getBrand() + ", Model: " + car.getModel()
-                        + ", Price/Day: $" + car.calculatePrice(1));
-            }
-        }
+    public List<Rental> getRentals() {
+        return rentals;
     }
 
     public void rentCar(String carId, Customer customer, int days) {
@@ -318,41 +360,42 @@ class RentalSystem {
                 car.rentStart();
                 Rental rental = new Rental(car, customer, days);
                 rentals.add(rental);
-                System.out.println(customer.getName() + " has rented the " + car.getBrand() + " " + car.getModel()
-                        + " for " + days + " days.");
+                saveCarsToFile(); // Save car availability change
+                System.out.println("Car rented successfully. Total price: $" + car.calculatePrice(days));
                 return;
             }
         }
-        System.out.println("Car with ID " + carId + " is not available.");
+        System.out.println("Car not available for rent.");
+    }
+
+    public void viewAvailableCars() {
+        System.out.println("Available Cars:");
+        for (Car car : cars) {
+            if (car.isAvailable()) {
+                System.out.println("ID: " + car.getCarId() + ", Brand: " + car.getBrand() +
+                        ", Model: " + car.getModel() + ", Price/Day: $" + car.calculatePrice(1));
+            }
+        }
     }
 
     public void extendRental(String carId, int additionalDays) {
         for (Rental rental : rentals) {
             if (rental.getCar().getCarId().equals(carId)) {
-                int newDays = rental.getDays() + additionalDays;
-                System.out.println("Rental for car " + rental.getCar().getBrand() + " " + rental.getCar().getModel()
-                        + " extended by " + additionalDays + " days. Total rental days: " + newDays);
+                rental.days += additionalDays;
+                System.out.println("Rental extended by " + additionalDays + " days.");
                 return;
             }
         }
-        System.out.println("No rental found for car with ID " + carId);
+        System.out.println("Rental not found.");
     }
 
     public void viewRentalHistory(Customer customer) {
         System.out.println("Rental History for " + customer.getName() + ":");
         for (Rental rental : rentals) {
-            if (rental.getCustomer().getCustomerId().equals(customer.getUserId())) {
-                System.out.println("Car: " + rental.getCar().getBrand() + " " + rental.getCar().getModel()
-                        + ", Days Rented: " + rental.getDays());
+            if (rental.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
+                System.out.println("Car: " + rental.getCar().getBrand() + " " + rental.getCar().getModel() +
+                        ", Days: " + rental.getDays());
             }
         }
-    }
-
-    public void addCar(Car car) {
-        cars.add(car);
-    }
-
-    public List<Rental> getRentals() {
-        return rentals;
     }
 }
